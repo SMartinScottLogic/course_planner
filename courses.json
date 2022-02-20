@@ -1,0 +1,21 @@
+{
+    "0": {
+        "name": "Toast",
+        "stages": [
+            {
+                "name": "Bread in toaster",
+                "duration": {
+                    "secs": 60,
+                    "nanos": 0
+                }
+            },
+            {
+                "name": "Serving",
+                "duration": {
+                    "secs": 0,
+                    "nanos": 0
+                }
+            }
+        ]
+    }
+}

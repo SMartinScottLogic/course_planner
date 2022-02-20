@@ -1,0 +1,184 @@
+{
+    "5": {
+        "stages": [
+            {
+                "name": "Serving",
+                "duration": {
+                    "secs": 0,
+                    "nanos": 0
+                }
+            }
+        ]
+    },
+    "2": {
+        "stages": [
+            {
+                "name": "Serving",
+                "duration": {
+                    "secs": 0,
+                    "nanos": 0
+                }
+            },
+            {
+                "name": "Gravy",
+                "duration": {
+                    "secs": 120,
+                    "nanos": 0
+                }
+            },
+            {
+                "name": "Roast Potatoes",
+                "duration": {
+                    "secs": 1800,
+                    "nanos": 0
+                }
+            },
+            {
+                "name": "Yorkshire puddings",
+                "duration": {
+                    "secs": 1500,
+                    "nanos": 0
+                }
+            },
+            {
+                "name": "Reduce sauce",
+                "duration": {
+                    "secs": 120,
+                    "nanos": 0
+                }
+            },
+            {
+                "name": "Duck Legs with sauce",
+                "duration": {
+                    "secs": 1020,
+                    "nanos": 0
+                }
+            },
+            {
+                "name": "Duck Legs",
+                "duration": {
+                    "secs": 1920,
+                    "nanos": 0
+                }
+            },
+            {
+                "name": "Duck crown",
+                "duration": {
+                    "secs": 6420,
+                    "nanos": 0
+                }
+            },
+            {
+                "name": "Coffee",
+                "duration": {
+                    "secs": 60,
+                    "nanos": 0
+                }
+            }
+        ]
+    },
+    "1": {
+        "stages": [
+            {
+                "name": "Serving",
+                "duration": {
+                    "secs": 0,
+                    "nanos": 0
+                }
+            },
+            {
+                "name": "Gravy",
+                "duration": {
+                    "secs": 120,
+                    "nanos": 0
+                }
+            },
+            {
+                "name": "Roast Potatoes",
+                "duration": {
+                    "secs": 1800,
+                    "nanos": 0
+                }
+            },
+            {
+                "name": "Yorkshire puddings",
+                "duration": {
+                    "secs": 1500,
+                    "nanos": 0
+                }
+            },
+            {
+                "name": "Reduce sauce",
+                "duration": {
+                    "secs": 120,
+                    "nanos": 0
+                }
+            },
+            {
+                "name": "Duck Legs with sauce",
+                "duration": {
+                    "secs": 1020,
+                    "nanos": 0
+                }
+            },
+            {
+                "name": "Duck Legs",
+                "duration": {
+                    "secs": 1920,
+                    "nanos": 0
+                }
+            },
+            {
+                "name": "Duck crown",
+                "duration": {
+                    "secs": 6420,
+                    "nanos": 0
+                }
+            }
+        ]
+    },
+    "7": {
+        "stages": [
+            {
+                "name": "Serving",
+                "duration": {
+                    "secs": 0,
+                    "nanos": 0
+                }
+            }
+        ]
+    },
+    "3": {
+        "stages": [
+            {
+                "name": "Serving",
+                "duration": {
+                    "secs": 0,
+                    "nanos": 0
+                }
+            }
+        ]
+    },
+    "4": {
+        "stages": [
+            {
+                "name": "Serving",
+                "duration": {
+                    "secs": 0,
+                    "nanos": 0
+                }
+            }
+        ]
+    },
+    "6": {
+        "stages": [
+            {
+                "name": "Serving",
+                "duration": {
+                    "secs": 0,
+                    "nanos": 0
+                }
+            }
+        ]
+    }
+}
