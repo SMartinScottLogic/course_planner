@@ -8,7 +8,7 @@ use std::sync::{Arc, Mutex};
 #[macro_use]
 extern crate rocket;
 
-use backend::{Course, Stage};
+use common::{Course, Stage};
 
 #[derive(Default, Debug)]
 struct Config {
