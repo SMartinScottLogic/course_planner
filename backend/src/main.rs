@@ -69,7 +69,12 @@ fn add_course(state: &State<Config>, details: Json<CourseDetails>) -> Json<Vec<C
         let mut details = details.into_inner();
         let id = uuid::Uuid::new_v4().to_string();
         details.set_id(&id);
-        courses.insert(id, Course::new(&details));
+        let mut course = Course::new(&details);
+        for (i, s) in details.name().split(' ').enumerate() {
+            let stage = Stage::new(s, &format!("{}s", 30 + i * 20));
+            course.add(stage);
+        }
+        courses.insert(id, course);
     }
     get_courses(state)
 }
@@ -136,6 +141,26 @@ impl Fairing for Cors {
     }
 }
 
+struct NoCache;
+
+#[rocket::async_trait]
+impl Fairing for NoCache {
+    fn info(&self) -> Info {
+        Info {
+            name: "Attaching NoCache headers to responses",
+            kind: Kind::Response,
+        }
+    }
+    async fn on_response<'r>(&self, _request: &'r Request<'_>, response: &mut Response<'r>) {
+        response.set_header(Header::new(
+            "Cache-Control",
+            "no-cache, no-store, must-revalidate",
+        ));
+        response.set_header(Header::new("Pragma", "no-cache"));
+        response.set_header(Header::new("Expires", "0"));
+    }
+}
+
 #[launch]
 fn rocket() -> _ {
     let config = Config::default();
@@ -147,6 +172,7 @@ fn rocket() -> _ {
         .merge(("tls.key", "backend/key.pem"));
     rocket::custom(figment)
         .attach(Cors)
+        .attach(NoCache)
         .mount(
             "/",
             routes![
