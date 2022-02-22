@@ -1,9 +1,9 @@
 use rocket::data::{Limits, ToByteUnit};
-use rocket::http::uri::Path;
+
+use rocket::fairing::{Fairing, Info, Kind};
+use rocket::http::Header;
 use rocket::serde::json::Json;
 use rocket::State;
-use rocket::fairing::{Fairing, Info, Kind};
-use rocket::http::{Header, ContentType};
 use rocket::{Request, Response};
 
 use std::collections::HashMap;
@@ -13,7 +13,7 @@ use std::sync::{Arc, Mutex};
 #[macro_use]
 extern crate rocket;
 
-use common::{Course, Stage, CourseDetails};
+use common::{Course, CourseDetails, Stage};
 
 #[derive(Default, Debug)]
 struct Config {
@@ -26,7 +26,7 @@ fn hello() -> &'static str {
 }
 
 #[get("/courses")]
-fn courses(state: &State<Config>) -> Json<Vec<CourseDetails>> {
+fn get_courses(state: &State<Config>) -> Json<Vec<CourseDetails>> {
     let r = state
         .courses
         .lock()
@@ -57,22 +57,21 @@ fn add_stage(state: &State<Config>, id: &str, stage: Json<Stage>) -> Json<Vec<St
             course.add(stage.into_inner());
             course.stages().collect()
         }
-        None => Vec::new()
+        None => Vec::new(),
     };
     Json(stages)
 }
 
 #[put("/course", data = "<details>")]
-fn add_course(state: &State<Config>, details: Json<CourseDetails>) -> Json<Vec<Stage>> {
-    let mut courses = state.courses.lock().unwrap();
-    let mut details = details.into_inner();
-    let id = uuid::Uuid::new_v4().to_string();
-    details.set_id(&id);
-    println!("details {details:?}");
-    let course = courses
-        .entry(id)
-        .or_insert_with(|| Course::new(&details));
-    Json(course.stages().collect())
+fn add_course(state: &State<Config>, details: Json<CourseDetails>) -> Json<Vec<CourseDetails>> {
+    {
+        let mut courses = state.courses.lock().unwrap();
+        let mut details = details.into_inner();
+        let id = uuid::Uuid::new_v4().to_string();
+        details.set_id(&id);
+        courses.insert(id, Course::new(&details));
+    }
+    get_courses(state)
 }
 
 /*
@@ -110,25 +109,28 @@ fn test(id: &str) -> Option<Json<Vec<Stage>>> {
 }
 */
 
-#[options("/<path..>")]
-fn options(path: PathBuf) -> String {
+#[options("/<_path..>")]
+fn options(_path: PathBuf) -> String {
     "Ok".to_string()
 }
 
-struct CORS;
+struct Cors;
 
 #[rocket::async_trait]
-impl Fairing for CORS {
+impl Fairing for Cors {
     fn info(&self) -> Info {
         Info {
             name: "Attaching CORS headers to responses",
-            kind: Kind::Response
+            kind: Kind::Response,
         }
     }
 
     async fn on_response<'r>(&self, _request: &'r Request<'_>, response: &mut Response<'r>) {
         response.set_header(Header::new("Access-Control-Allow-Origin", "*"));
-        response.set_header(Header::new("Access-Control-Allow-Methods", "POST, GET, PATCH, OPTIONS, PUT"));
+        response.set_header(Header::new(
+            "Access-Control-Allow-Methods",
+            "POST, GET, PATCH, OPTIONS, PUT",
+        ));
         response.set_header(Header::new("Access-Control-Allow-Headers", "*"));
         response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
     }
@@ -144,12 +146,15 @@ fn rocket() -> _ {
         .merge(("tls.certs", "backend/certs.pem"))
         .merge(("tls.key", "backend/key.pem"));
     rocket::custom(figment)
-        .attach(CORS)
+        .attach(Cors)
         .mount(
             "/",
             routes![
                 hello, //test,
-                courses, course, add_stage, add_course,
+                get_courses,
+                course,
+                add_stage,
+                add_course,
                 options,
             ],
         )

@@ -23,7 +23,7 @@ impl Course {
         let stages = vec![Stage::new("Serving", "0s")];
         Self {
             stages,
-            details: details.to_owned()
+            details: details.to_owned(),
         }
     }
 
@@ -53,7 +53,7 @@ impl CourseDetails {
     pub fn new(id: &str, name: &str) -> Self {
         Self {
             id: id.to_owned(),
-            name: name.to_owned()
+            name: name.to_owned(),
         }
     }
 
