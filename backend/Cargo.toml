@@ -16,6 +16,7 @@ common = {path = "../common"}
 # A generic serialization/deserialization framework
 #serde = "1.0.132"
 #serde_json = "1.0"
+uuid = { version = "0.8", features = ["serde", "v4"] }
 
 # Web framework with a focus on usability, security, extensibility, and speed. 
 [dependencies.rocket]
