@@ -4,6 +4,15 @@ use yew::prelude::*;
 
 use common::{CourseDetails, Stage};
 
+const STYLES: &str = ".courses {
+    background: blue;
+}
+.course {
+    color: green;
+    cursor: pointer;
+}
+";
+
 #[derive(Clone, Properties, PartialEq)]
 struct CourseDetailsProps {
     course_details: CourseDetails,
@@ -11,6 +20,8 @@ struct CourseDetailsProps {
 
 #[function_component(CourseDetailsDisplay)]
 fn course_details(CourseDetailsProps { course_details }: &CourseDetailsProps) -> Html {
+    let stage_classes = ["stage"];
+
     log::debug!("course_details {course_details:?}");
     let course = use_state(std::vec::Vec::new);
     {
@@ -39,7 +50,7 @@ fn course_details(CourseDetailsProps { course_details }: &CourseDetailsProps) ->
 
     let stages = course.iter().map(|stage| {
         html! {
-            <div>{ stage }</div>
+            <div class={classes!(stage_classes.as_ref())}>{ stage }</div>
         }
     });
     html! {
@@ -65,6 +76,7 @@ fn courses_list(
         on_click,
     }: &CourseListProps,
 ) -> Html {
+    let course_detail_classes = ["course"];
     let on_click = on_click.clone();
     course_details
         .iter()
@@ -75,7 +87,7 @@ fn courses_list(
                 Callback::from(move |_| on_click.emit(course_detail.clone()))
             };
             html! {
-                <p onclick={on_course_select}>{course_detail.name().to_string()}</p>
+                <p class={classes!(course_detail_classes.as_ref())} onclick={on_course_select}>{course_detail.name().to_string()}</p>
             }
         })
         .collect()
@@ -115,10 +127,38 @@ fn course_name_editor(CourseNameEditorProps { on_change }: &CourseNameEditorProp
             }
         }
     };
+    let onkeyup = {
+        let course_name_ref = course_name_ref.clone();
+        let on_change = on_change.clone();
+        move |e: KeyboardEvent| {
+            if e.key_code()==13 {
+                if let Some(input) = course_name_ref.cast::<HtmlInputElement>() {
+                    let on_change = on_change.clone();
+                    let name = input.value();
+                    let course_details = CourseDetails::new("", &name);
+                    log::info!("Update: {:?}", course_details);
+                    wasm_bindgen_futures::spawn_local(async move {
+                        let fetched_courses: Vec<CourseDetails> =
+                            Request::put("https://localhost:1111/course")
+                                .body(serde_json::to_string(&course_details).unwrap())
+                                .header("Content-Type", "application/json")
+                                .send()
+                                .await
+                                .unwrap()
+                                .json()
+                                .await
+                                .unwrap();
+                        on_change.emit(fetched_courses);
+                    });
+                }
+            }
+        }
+    };
     html! {
         <>
         <input type="text"
         ref={course_name_ref}
+        onkeyup={onkeyup}
         name="course_name_editor"
         data-test-selector="nav-search-input"
         placeholder="Course name …"
@@ -175,11 +215,14 @@ fn app() -> Html {
 
     html! {
         <>
+            <style>{ STYLES }</style>
             <h1>{ "RustConf Explorer" }</h1>
             <CourseNameEditor on_change={update_courses}/>
             <div>
                 <h3>{"Known Courses"}</h3>
+                <div class={"courses"}> 
                 <CoursesList course_details={(*courses).clone()} on_click={on_course_select.clone()} />
+                </div>
             </div>
             { for details }
         </>
