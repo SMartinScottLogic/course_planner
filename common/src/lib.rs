@@ -6,18 +6,24 @@ use std::fmt;
 
 use itertools::Itertools;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Course {
-    name: String,
+    details: CourseDetails,
     stages: Vec<Stage>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct CourseDetails {
+    id: String,
+    name: String,
+}
+
 impl Course {
-    pub fn new(name: &str) -> Self {
+    pub fn new(details: &CourseDetails) -> Self {
         let stages = vec![Stage::new("Serving", "0s")];
         Self {
             stages,
-            name: name.to_string(),
+            details: details.to_owned()
         }
     }
 
@@ -26,8 +32,8 @@ impl Course {
         self.stages.push(stage);
     }
 
-    pub fn name(&self) -> &str {
-        &self.name
+    pub fn details(&self) -> &CourseDetails {
+        &self.details
     }
 
     pub fn stages(&self) -> impl Iterator<Item = Stage> + '_ {
@@ -43,7 +49,24 @@ impl Course {
     }
 }
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+impl CourseDetails {
+    pub fn new(id: &str, name: &str) -> Self {
+        Self {
+            id: id.to_owned(),
+            name: name.to_owned()
+        }
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn set_id(&mut self, id: &str) {
+        self.id = id.to_owned();
+    }
+}
+
+#[derive(Debug, Default, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Stage {
     name: String,
     duration: std::time::Duration,
