@@ -2,7 +2,7 @@ use reqwasm::http::Request;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 
-use common::CourseDetails;
+use common::{CourseDetails, Stage};
 
 #[derive(Clone, Properties, PartialEq)]
 struct CourseDetailsProps {
@@ -11,10 +11,42 @@ struct CourseDetailsProps {
 
 #[function_component(CourseDetailsDisplay)]
 fn course_details(CourseDetailsProps { course_details }: &CourseDetailsProps) -> Html {
+    log::debug!("course_details {course_details:?}");
+    let course = use_state(std::vec::Vec::new);
+    {
+        let course = course.clone();
+        let id = course_details.id().to_owned();
+        use_effect_with_deps(
+            move |_| {
+                let course = course.clone();
+                wasm_bindgen_futures::spawn_local(async move {
+                    let fetched_course: Vec<Stage> =
+                        Request::get(&format!("https://localhost:1111/course/{id}"))
+                            .send()
+                            .await
+                            .unwrap()
+                            .json()
+                            .await
+                            .unwrap();
+                    log::debug!("fetched course: {fetched_course:?}");
+                    course.set(fetched_course);
+                });
+                || ()
+            },
+            course_details.clone(),
+        );
+    }
+
+    let stages = course.iter().map(|stage| {
+        html! {
+            <div>{ stage }</div>
+        }
+    });
     html! {
         <div>
             <h3>{ course_details.name() }</h3>
             <div>{ course_details.id() }</div>
+            { for stages }
             <img src="https://via.placeholder.com/640x360.png?text=Video+Player+Placeholder" alt="video thumbnail" />
         </div>
     }
@@ -79,7 +111,6 @@ fn course_name_editor(CourseNameEditorProps { on_change }: &CourseNameEditorProp
                             .await
                             .unwrap();
                     on_change.emit(fetched_courses);
-                    //courses.set(fetched_courses);
                 });
             }
         }
@@ -106,7 +137,6 @@ fn app() -> Html {
         let courses = courses.clone();
         use_effect_with_deps(
             move |_| {
-                let courses = courses.clone();
                 wasm_bindgen_futures::spawn_local(async move {
                     let fetched_courses: Vec<CourseDetails> =
                         Request::get("https://localhost:1111/courses/")
@@ -146,7 +176,7 @@ fn app() -> Html {
     html! {
         <>
             <h1>{ "RustConf Explorer" }</h1>
-            <CourseNameEditor on_change={update_courses.clone()}/>
+            <CourseNameEditor on_change={update_courses}/>
             <div>
                 <h3>{"Known Courses"}</h3>
                 <CoursesList course_details={(*courses).clone()} on_click={on_course_select.clone()} />
