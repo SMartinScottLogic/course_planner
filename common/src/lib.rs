@@ -61,6 +61,10 @@ impl CourseDetails {
         &self.name
     }
 
+    pub fn id(&self) -> &str {
+        &self.id
+    }
+
     pub fn set_id(&mut self, id: &str) {
         self.id = id.to_owned();
     }

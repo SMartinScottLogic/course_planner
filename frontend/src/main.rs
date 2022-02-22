@@ -14,6 +14,7 @@ fn course_details(CourseDetailsProps { course_details }: &CourseDetailsProps) ->
     html! {
         <div>
             <h3>{ course_details.name() }</h3>
+            <div>{ course_details.id() }</div>
             <img src="https://via.placeholder.com/640x360.png?text=Video+Player+Placeholder" alt="video thumbnail" />
         </div>
     }
