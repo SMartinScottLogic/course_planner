@@ -1,0 +1,22 @@
+.wrapper {
+    display: flex;  
+    flex-flow: row wrap;
+}
+
+.wrapper > * {
+    padding: 10px;
+    flex: 1 0px;
+}
+
+.course {
+    cursor: pointer;
+}
+
+body {
+    padding: 2em;
+    padding-top: 0em;
+}
+  
+h2 {
+    text-align: center;
+}

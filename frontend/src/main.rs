@@ -4,15 +4,6 @@ use yew::prelude::*;
 
 use common::{CourseDetails, Stage};
 
-const STYLES: &str = ".courses {
-    background: blue;
-}
-.course {
-    color: green;
-    cursor: pointer;
-}
-";
-
 #[derive(Clone, Properties, PartialEq)]
 struct CourseDetailsProps {
     course_details: CourseDetails,
@@ -50,15 +41,17 @@ fn course_details(CourseDetailsProps { course_details }: &CourseDetailsProps) ->
 
     let stages = course.iter().map(|stage| {
         html! {
-            <div class={classes!(stage_classes.as_ref())}>{ stage }</div>
+            <div class={classes!(stage_classes.as_ref())}>
+                <p class={"name"} style="padding-left: 2.5rem;">{ stage.name() }</p>
+                <p class={"duration"}><i class="bi-alarm" style="font-size: 2rem; color: cornflowerblue; padding-right: 0.5rem;"></i>{ stage.duration() }</p>
+            </div>
         }
     });
     html! {
         <div>
-            <h3>{ course_details.name() }</h3>
-            <div>{ course_details.id() }</div>
+            <h2>{ course_details.name() }</h2>
+            <div style="display: none">{ course_details.id() }</div>
             { for stages }
-            <img src="https://via.placeholder.com/640x360.png?text=Video+Player+Placeholder" alt="video thumbnail" />
         </div>
     }
 }
@@ -131,7 +124,7 @@ fn course_name_editor(CourseNameEditorProps { on_change }: &CourseNameEditorProp
         let course_name_ref = course_name_ref.clone();
         let on_change = on_change.clone();
         move |e: KeyboardEvent| {
-            if e.key_code()==13 {
+            if e.key_code() == 13 {
                 if let Some(input) = course_name_ref.cast::<HtmlInputElement>() {
                     let on_change = on_change.clone();
                     let name = input.value();
@@ -155,18 +148,12 @@ fn course_name_editor(CourseNameEditorProps { on_change }: &CourseNameEditorProp
         }
     };
     html! {
-        <>
-        <input type="text"
-        ref={course_name_ref}
-        onkeyup={onkeyup}
-        name="course_name_editor"
-        data-test-selector="nav-search-input"
-        placeholder="Course name …"
-        autocapitalize="none"
-        spellcheck="false"
-        autocomplete="off" />
-        <button onclick={onclick}>{ "Ok" }</button>
-        </>
+        <div style="display: flex; flex-flow: row nowrap;">
+            <input type="text" ref={course_name_ref} onkeyup={onkeyup}
+                name="course_name_editor" data-test-selector="nav-search-input" placeholder="Course name …"
+                autocapitalize="none" spellcheck="false" autocomplete="off"  style="flex: 4 0px; padding-right: 1em"/>
+            <button onclick={onclick} style="flex: 0">{ "Ok" }</button>
+        </div>
     }
 }
 
@@ -214,18 +201,21 @@ fn app() -> Html {
     });
 
     html! {
-        <>
-            <style>{ STYLES }</style>
-            <h1>{ "RustConf Explorer" }</h1>
-            <CourseNameEditor on_change={update_courses}/>
-            <div>
-                <h3>{"Known Courses"}</h3>
-                <div class={"courses"}> 
-                <CoursesList course_details={(*courses).clone()} on_click={on_course_select.clone()} />
+        <div class={"wrapper"}>
+            <div style={"flex: 1 100%"}>
+                <h1>{ "Course Planner" }</h1>
+            </div>
+            <div style={"background: tomato"}>
+                <h2>{"Known Courses"}</h2>
+                <CourseNameEditor on_change={update_courses}/>
+                <div class={"courses"}>
+                    <CoursesList course_details={(*courses).clone()} on_click={on_course_select.clone()} />
                 </div>
             </div>
-            { for details }
-        </>
+            <div style={"background: lightgreen; flex: 2 0px"}>
+                { for details }
+            </div>
+        </div>
     }
 }
 
