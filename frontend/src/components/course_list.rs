@@ -1,5 +1,5 @@
 use common::CourseDetails;
-use yew::{function_component, Properties, Callback, html, classes};
+use yew::{classes, function_component, html, Callback, Properties};
 
 #[derive(Properties, PartialEq)]
 pub struct CourseListProps {
@@ -30,4 +30,3 @@ pub fn courses_list(
         })
         .collect()
 }
-
