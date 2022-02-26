@@ -63,7 +63,7 @@ fn add_stage(state: &State<Config>, id: &str, stage: Json<Stage>) -> Json<Vec<St
 }
 
 #[put("/course", data = "<details>")]
-fn add_course(state: &State<Config>, details: Json<CourseDetails>) -> Json<Vec<CourseDetails>> {
+fn add_course(state: &State<Config>, details: Json<CourseDetails>) -> Json<CourseDetails> {
     {
         let mut courses = state.courses.lock().unwrap();
         let mut details = details.into_inner();
@@ -75,8 +75,8 @@ fn add_course(state: &State<Config>, details: Json<CourseDetails>) -> Json<Vec<C
             course.add(stage);
         }
         courses.insert(id, course);
+        Json(details)
     }
-    get_courses(state)
 }
 
 /*

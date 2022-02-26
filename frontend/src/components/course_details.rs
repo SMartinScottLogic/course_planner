@@ -1,6 +1,6 @@
 use common::{CourseDetails, Stage};
 use reqwasm::http::Request;
-use yew::{Properties, function_component, use_state, use_effect_with_deps, html, classes};
+use yew::{classes, function_component, html, use_effect_with_deps, use_state, Properties};
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct CourseDetailsProps {
@@ -41,16 +41,21 @@ pub fn course_details(CourseDetailsProps { course_details }: &CourseDetailsProps
         html! {
             <div class={classes!(stage_classes.as_ref())}>
                 <p class={"name"} style={"padding-left: 2.5rem;"}>{ stage.name() }</p>
-                <p class={"duration"}><crate::components::alarm::Alarm width=32 height=32 />{ stage.duration() }</p>
+                <p class={"duration"}><crate::components::icon::Alarm width=32 height=32 />{ stage.duration() }</p>
             </div>
         }
     });
+    let onclick = {
+        move |_| {
+            log::debug!("click");
+        }
+    };
     html! {
         <div>
             <h2>{ course_details.name() }</h2>
+            <h3><span style="cursor: pointer;" onclick={onclick}><crate::components::icon::Plus width=32 height=32 /></span><span style={"padding-left: 2.5rem; vertical-align: 8px;"}>{ "Stages" }</span></h3>
             <div style="display: none">{ course_details.id() }</div>
             { for stages }
         </div>
     }
 }
-

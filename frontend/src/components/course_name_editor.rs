@@ -1,7 +1,7 @@
 use common::CourseDetails;
 use reqwasm::http::Request;
 use web_sys::{HtmlInputElement, KeyboardEvent};
-use yew::{html, Properties, Callback, function_component, use_node_ref};
+use yew::{function_component, html, use_node_ref, Callback, Properties};
 
 #[derive(Properties, PartialEq)]
 pub struct CourseNameEditorProps {
@@ -9,33 +9,58 @@ pub struct CourseNameEditorProps {
     pub on_select: Callback<CourseDetails>,
 }
 
-fn add_new_course(input: HtmlInputElement, on_change: &Callback<Vec<CourseDetails>>, on_select: &Callback<CourseDetails>) {
-    let on_change = on_change.clone();
-    let on_select = on_select.clone();
-    let name = input.value();
-    let course_details = CourseDetails::new("", &name);
-    log::info!("Update: {:?}", course_details);
+fn fetch_courses(on_change: Box<dyn FnOnce(Vec<CourseDetails>)>) {
     wasm_bindgen_futures::spawn_local(async move {
         let mut fetched_courses: Vec<CourseDetails> =
-            Request::put("https://localhost:1111/course")
-                .body(serde_json::to_string(&course_details).unwrap())
-                .header("Content-Type", "application/json")
+            Request::get("https://localhost:1111/courses/")
                 .send()
                 .await
                 .unwrap()
                 .json()
                 .await
                 .unwrap();
+        log::debug!("fetched: {fetched_courses:?}");
         fetched_courses.sort_by(|a, b| a.name().cmp(b.name()));
-        if !fetched_courses.is_empty() {
-            on_select.emit(fetched_courses.get(0).unwrap().clone());
-        }
-        on_change.emit(fetched_courses);
+        on_change(fetched_courses);
+    });
+}
+
+fn add_new_course(
+    input: HtmlInputElement,
+    on_change: &Callback<Vec<CourseDetails>>,
+    on_select: &Callback<CourseDetails>,
+) {
+    let on_change = on_change.clone();
+    let on_select = on_select.clone();
+    let name = input.value();
+    let course_details = CourseDetails::new("", &name);
+    log::info!("Update: {:?}", course_details);
+
+    wasm_bindgen_futures::spawn_local(async move {
+        let course_details: CourseDetails = Request::put("https://localhost:1111/course")
+            .body(serde_json::to_string(&course_details).unwrap())
+            .header("Content-Type", "application/json")
+            .send()
+            .await
+            .unwrap()
+            .json()
+            .await
+            .unwrap();
+        let on_fetch = move |courses| {
+            on_change.emit(courses);
+            on_select.emit(course_details);
+        };
+        fetch_courses(Box::new(on_fetch));
     });
 }
 
 #[function_component(CourseNameEditor)]
-pub fn course_name_editor(CourseNameEditorProps { on_change, on_select }: &CourseNameEditorProps) -> Html {
+pub fn course_name_editor(
+    CourseNameEditorProps {
+        on_change,
+        on_select,
+    }: &CourseNameEditorProps,
+) -> Html {
     let course_name_ref = use_node_ref();
 
     let onclick = {
@@ -69,4 +94,3 @@ pub fn course_name_editor(CourseNameEditorProps { on_change, on_select }: &Cours
         </div>
     }
 }
-
