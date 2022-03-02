@@ -9,6 +9,7 @@ mod components;
 fn app() -> Html {
     let courses = use_state(std::vec::Vec::new);
     let selected_course = use_state(|| None);
+    let new_course_visible = use_state(|| false);
 
     let on_course_select = {
         let selected_course = selected_course.clone();
@@ -18,6 +19,7 @@ fn app() -> Html {
     {
         let courses = courses.clone();
         let on_course_select = on_course_select.clone();
+        let new_course_visible = new_course_visible.clone();
         use_effect_with_deps(
             move |_| {
                 wasm_bindgen_futures::spawn_local(async move {
@@ -31,8 +33,11 @@ fn app() -> Html {
                             .unwrap();
                     log::debug!("fetched: {fetched_courses:?}");
                     fetched_courses.sort_by(|a, b| a.name().cmp(b.name()));
-                    if !fetched_courses.is_empty() {
+                    if fetched_courses.is_empty() {
+                        new_course_visible.set(true);
+                    } else {
                         on_course_select.emit(fetched_courses.get(0).unwrap().clone());
+                        new_course_visible.set(false);
                     }
                     courses.set(fetched_courses);
                 });
@@ -53,19 +58,28 @@ fn app() -> Html {
         }
     });
 
+    let toggle_new_course = {
+        let new_course_visible = new_course_visible.clone();
+        move |_| {
+            new_course_visible.set(!*new_course_visible);
+        }
+    };
+
     html! {
         <div class={"wrapper"}>
-            <div style={"flex: 1 100%"}>
+            <div style={"flex: 1 100%; border-radius: 15px;"}>
                 <h1>{ "Course Planner" }</h1>
             </div>
-            <div style={"background: tomato"}>
-                <h2>{"Known Courses"}</h2>
-                <components::course_name_editor::CourseNameEditor on_change={update_courses} on_select={on_course_select.clone()} />
+            <div>
+                <h2>{"Known Courses"}<span style="cursor: pointer; padding-left: 1em;" onclick={toggle_new_course}><crate::components::icon::Plus width=32 height=32 /></span></h2>
+                if *(new_course_visible.clone()) {
+                    <components::course_name_editor::CourseNameEditor on_change={update_courses} on_select={on_course_select.clone()} />
+                }
                 <div class={"courses"}>
                     <components::course_list::CoursesList course_details={(*courses).clone()} on_click={on_course_select.clone()} />
                 </div>
             </div>
-            <div style={"background: lightgreen; flex: 2 0px"}>
+            <div style={"flex: 2 0px"}>
                 { for details }
             </div>
         </div>
