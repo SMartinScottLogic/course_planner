@@ -1,11 +1,16 @@
 .wrapper {
     display: flex;  
     flex-flow: row wrap;
+    background: darkgray;
 }
 
 .wrapper > * {
     padding: 10px;
     flex: 1 0px;
+    background: lightgray;
+    margin: 10px;
+    border: solid black 2px;
+    border-radius: 15px 15px 0px 0px;
 }
 
 .course {
@@ -15,6 +20,7 @@
 body {
     padding: 2em;
     padding-top: 0em;
+    background-color: darkgray;
 }
   
 h2 {

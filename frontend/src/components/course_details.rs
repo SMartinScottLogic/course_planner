@@ -1,6 +1,7 @@
 use common::{CourseDetails, Stage};
 use reqwasm::http::Request;
-use yew::{classes, function_component, html, use_effect_with_deps, use_state, Properties};
+use yew::{classes, function_component, html, use_effect_with_deps, use_state, Properties, Callback};
+use crate::components::safe_html::SafeHtml;
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct CourseDetailsProps {
@@ -10,17 +11,22 @@ pub struct CourseDetailsProps {
 #[function_component(CourseDetailsDisplay)]
 pub fn course_details(CourseDetailsProps { course_details }: &CourseDetailsProps) -> Html {
     let stage_classes = ["stage"];
+    let new_stage_visible = use_state(|| false);
 
     log::debug!("course_details {course_details:?}");
+    let id = course_details.id().to_owned();
     let course = use_state(std::vec::Vec::new);
     {
         let course = course.clone();
-        let id = course_details.id().to_owned();
+        let new_stage_visible = new_stage_visible.clone();
+        let id = id.clone();
         use_effect_with_deps(
             move |_| {
                 let course = course.clone();
+                let new_stage_visible = new_stage_visible.clone();
+                let id = id.clone();
                 wasm_bindgen_futures::spawn_local(async move {
-                    let fetched_course: Vec<Stage> =
+                    let fetched_stages: Vec<Stage> =
                         Request::get(&format!("https://localhost:1111/course/{id}"))
                             .send()
                             .await
@@ -28,14 +34,41 @@ pub fn course_details(CourseDetailsProps { course_details }: &CourseDetailsProps
                             .json()
                             .await
                             .unwrap();
-                    log::debug!("fetched course: {fetched_course:?}");
-                    course.set(fetched_course);
+                    log::debug!("fetched course: {fetched_stages:?}");
+                    new_stage_visible.set(fetched_stages.is_empty());
+                    course.set(fetched_stages);
                 });
                 || ()
             },
             course_details.clone(),
         );
     }
+
+    let update_stages = {
+        let course = course.clone();
+        let new_stage_visible = new_stage_visible.clone();
+        let id = id.clone();
+        Callback::from(move |stage| {
+            let id = id.clone();
+            let new_stage_visible = new_stage_visible.clone();
+            let course = course.clone();
+            log::debug!("New stage for {id}: {stage}");
+            wasm_bindgen_futures::spawn_local(async move {
+                let fetched_stages: Vec<Stage> =
+                    Request::post(&format!("https://localhost:1111/course/{id}"))
+                        .body(serde_json::to_string(&stage).unwrap())
+                        .send()
+                        .await
+                        .unwrap()
+                        .json()
+                        .await
+                        .unwrap();
+                log::debug!("fetched stage: {fetched_stages:?}");
+                new_stage_visible.set(fetched_stages.is_empty());
+                course.set(fetched_stages);
+            });
+        })
+    };
 
     let stages = course.iter().map(|stage| {
         html! {
@@ -45,16 +78,23 @@ pub fn course_details(CourseDetailsProps { course_details }: &CourseDetailsProps
             </div>
         }
     });
+
     let onclick = {
+        let new_stage_visible = new_stage_visible.clone();
         move |_| {
-            log::debug!("click");
+            new_stage_visible.set(!*new_stage_visible);
         }
     };
     html! {
         <div>
             <h2>{ course_details.name() }</h2>
             <h3><span style="cursor: pointer;" onclick={onclick}><crate::components::icon::Plus width=32 height=32 /></span><span style={"padding-left: 2.5rem; vertical-align: 8px;"}>{ "Stages" }</span></h3>
-            <div style="display: none">{ course_details.id() }</div>
+            if *(new_stage_visible.clone()) {
+                <div>{ "Add to course " }{ course_details.id() }</div>
+                <crate::components::stage_editor::StageEditor on_change={update_stages.clone()} />
+
+                <SafeHtml style="font-size: 3em;" wrapper="div" html="&#x1F418; &#x1F427; &#x1F43C; &#x2665; &#x2605; &#x2139; &#x1F480; &#x1F44C; &#x1F37D; &#x1F384; &#x23F2;" />
+            }
             { for stages }
         </div>
     }

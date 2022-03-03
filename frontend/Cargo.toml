@@ -12,6 +12,7 @@ reqwasm = "0.4"
 wasm-bindgen-futures = "0.4"
 # Bindings for all Web APIs, a procedurally generated crate from WebIDL 
 web-sys = "0.3"
+gloo-utils = "0.1.2"    # Convenience crate for common `web_sys` features
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 # A lightweight logging facade for Rust 
