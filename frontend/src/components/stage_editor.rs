@@ -3,7 +3,7 @@ use reqwasm::http::Request;
 use yew::{function_component, Properties, html, Callback, use_node_ref};
 use web_sys::{HtmlInputElement, KeyboardEvent};
 
-
+use crate::SERVER;
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct StageEditorProps {
@@ -24,7 +24,7 @@ fn add_new_stage(
     log::info!("Add stage: {:?}", stage);
 
     wasm_bindgen_futures::spawn_local(async move {
-        let stages: Vec<Stage> = Request::post(&format!("https://localhost:1111/course/{id}"))
+        let stages: Vec<Stage> = Request::post(&format!("{SERVER}/course/{id}"))
             .body(serde_json::to_string(&stage).unwrap())
             .header("Content-Type", "application/json")
             .send()

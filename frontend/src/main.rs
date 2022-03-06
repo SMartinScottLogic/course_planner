@@ -5,6 +5,12 @@ use common::CourseDetails;
 
 mod components;
 
+// Use `wee_alloc` as the global allocator.
+#[global_allocator]
+static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+
+const SERVER: &str = "http://localhost:1111";
+
 #[function_component(App)]
 fn app() -> Html {
     let courses = use_state(std::vec::Vec::new);
@@ -24,7 +30,7 @@ fn app() -> Html {
             move |_| {
                 wasm_bindgen_futures::spawn_local(async move {
                     let mut fetched_courses: Vec<CourseDetails> =
-                        Request::get("https://localhost:1111/courses/")
+                        Request::get(&format!("{SERVER}/courses/"))
                             .send()
                             .await
                             .unwrap()
@@ -66,10 +72,12 @@ fn app() -> Html {
     };
 
     html! {
-        <div class={"wrapper"}>
-            <div style={"flex: 1 100%; border-radius: 15px;"}>
-                <h1>{ "Course Planner" }</h1>
-            </div>
+        <>
+        <div class={"header"}>
+        <h1>{ "Course Planner" }</h1>
+    </div>
+    <div class={"wrapper"}>
+            <div class={"content"}>
             <div>
                 <h2>{"Known Courses"}<span style="cursor: pointer; padding-left: 1em;" onclick={toggle_new_course}><crate::components::icon::Plus width=32 height=32 /></span></h2>
                 if *(new_course_visible.clone()) {
@@ -82,7 +90,9 @@ fn app() -> Html {
             <div style={"flex: 2 0px"}>
                 { for details }
             </div>
+            </div>
         </div>
+        </>
     }
 }
 

@@ -3,6 +3,8 @@ use reqwasm::http::Request;
 use yew::{classes, function_component, html, use_effect_with_deps, use_state, Properties, Callback};
 use crate::components::safe_html::SafeHtml;
 
+use crate::SERVER;
+
 #[derive(Clone, Properties, PartialEq)]
 pub struct CourseDetailsProps {
     pub course_details: CourseDetails,
@@ -27,7 +29,7 @@ pub fn course_details(CourseDetailsProps { course_details }: &CourseDetailsProps
                 let id = id.clone();
                 wasm_bindgen_futures::spawn_local(async move {
                     let fetched_stages: Vec<Stage> =
-                        Request::get(&format!("https://localhost:1111/course/{id}"))
+                        Request::get(&format!("{SERVER}/course/{id}"))
                             .send()
                             .await
                             .unwrap()
@@ -55,7 +57,7 @@ pub fn course_details(CourseDetailsProps { course_details }: &CourseDetailsProps
             log::debug!("New stage for {id}: {stage}");
             wasm_bindgen_futures::spawn_local(async move {
                 let fetched_stages: Vec<Stage> =
-                    Request::post(&format!("https://localhost:1111/course/{id}"))
+                    Request::post(&format!("{SERVER}/course/{id}"))
                         .body(serde_json::to_string(&stage).unwrap())
                         .send()
                         .await
