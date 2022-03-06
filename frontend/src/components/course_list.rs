@@ -18,14 +18,15 @@ pub fn courses_list(
     let on_click = on_click.clone();
     course_details
         .iter()
-        .map(|course_detail| {
+        .enumerate()
+        .map(|(id, course_detail)| {
             let on_course_select = {
                 let on_click = on_click.clone();
                 let course_detail = course_detail.clone();
                 Callback::from(move |_| on_click.emit(course_detail.clone()))
             };
             html! {
-                <p class={classes!(course_detail_classes.as_ref())} onclick={on_course_select}>{course_detail.name().to_string()}</p>
+                <p class={classes!(course_detail_classes.as_ref())} style={if id%2==0 {"background: #bbb;"}else{"background: #ccc;"}} onclick={on_course_select}>{course_detail.name().to_string()}</p>
             }
         })
         .collect()

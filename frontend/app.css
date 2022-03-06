@@ -21,8 +21,7 @@
 
 .content > * {
     overflow-y: auto;
-    padding: 10px;
-    padding-bottom: 0px;
+    padding: 0px;
     flex: 1 0px;
     background: lightgray;
     margin: 10px;
@@ -35,6 +34,10 @@
     cursor: pointer;
 }
 
+.stage, .course {
+    padding: 0px 10px 0px 10px;
+}
+
 body {
     padding: 2em;
     padding-top: 0em;
@@ -43,4 +46,10 @@ body {
   
 h2 {
     text-align: center;
+}
+
+p {
+    margin: 0px;
+    height: 36px;
+    line-height: 36px;
 }

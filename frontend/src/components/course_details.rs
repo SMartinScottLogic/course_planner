@@ -72,9 +72,9 @@ pub fn course_details(CourseDetailsProps { course_details }: &CourseDetailsProps
         })
     };
 
-    let stages = course.iter().map(|stage| {
+    let stages = course.iter().enumerate().map(|(id, stage)| {
         html! {
-            <div class={classes!(stage_classes.as_ref())}>
+            <div class={classes!(stage_classes.as_ref())} style={if id%2==0 {"background: #bbb;"}else{"background: #ccc;"}}>
                 <p class={"name"} style={"padding-left: 2.5rem;"}>{ stage.name() }</p>
                 <p class={"duration"}><crate::components::icon::Alarm width=32 height=32 />{ stage.duration() }</p>
             </div>
