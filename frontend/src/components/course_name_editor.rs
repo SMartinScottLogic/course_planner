@@ -3,6 +3,8 @@ use reqwasm::http::Request;
 use web_sys::{HtmlInputElement, KeyboardEvent};
 use yew::{function_component, html, use_node_ref, Callback, Properties};
 
+use crate::SERVER;
+
 #[derive(Properties, PartialEq)]
 pub struct CourseNameEditorProps {
     pub on_change: Callback<Vec<CourseDetails>>,
@@ -12,7 +14,7 @@ pub struct CourseNameEditorProps {
 fn fetch_courses(on_change: Box<dyn FnOnce(Vec<CourseDetails>)>) {
     wasm_bindgen_futures::spawn_local(async move {
         let mut fetched_courses: Vec<CourseDetails> =
-            Request::get("https://localhost:1111/courses/")
+            Request::get(&format!("{SERVER}/courses/"))
                 .send()
                 .await
                 .unwrap()
@@ -37,7 +39,7 @@ fn add_new_course(
     log::info!("Update: {:?}", course_details);
 
     wasm_bindgen_futures::spawn_local(async move {
-        let course_details: CourseDetails = Request::put("https://localhost:1111/course")
+        let course_details: CourseDetails = Request::put(&format!("{SERVER}/course"))
             .body(serde_json::to_string(&course_details).unwrap())
             .header("Content-Type", "application/json")
             .send()

@@ -69,11 +69,7 @@ fn add_course(state: &State<Config>, details: Json<CourseDetails>) -> Json<Cours
         let mut details = details.into_inner();
         let id = uuid::Uuid::new_v4().to_string();
         details.set_id(&id);
-        let mut course = Course::new(&details);
-        for (i, s) in details.name().split(' ').enumerate() {
-            let stage = Stage::new(s, &format!("{}s", 30 + i * 20));
-            course.add(stage);
-        }
+        let course = Course::new(&details);
         courses.insert(id, course);
         Json(details)
     }
@@ -168,8 +164,9 @@ fn rocket() -> _ {
     let figment = rocket::Config::figment()
         .merge(("port", 1111))
         .merge(("limits", Limits::new().limit("json", 2.mebibytes())))
-        .merge(("tls.certs", "backend/certs.pem"))
-        .merge(("tls.key", "backend/key.pem"));
+        //.merge(("tls.certs", "backend/certs.pem"))
+        //.merge(("tls.key", "backend/key.pem"))
+        ;
     rocket::custom(figment)
         .attach(Cors)
         .attach(NoCache)
