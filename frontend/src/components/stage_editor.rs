@@ -1,6 +1,6 @@
 use common::{Stage, CourseDetails};
 use reqwasm::http::Request;
-use yew::{function_component, Properties, html, Callback, use_node_ref};
+use yew::{function_component, Properties, html, Callback, use_node_ref, use_effect_with_deps};
 use web_sys::{HtmlInputElement, KeyboardEvent};
 
 use crate::SERVER;
@@ -43,6 +43,18 @@ pub fn stage_editor(StageEditorProps { on_change }: &StageEditorProps) -> Html {
     let stage_name_ref = use_node_ref();
     let stage_duration_ref = use_node_ref();
 
+    {
+        let stage_name_ref = stage_name_ref.clone();
+        use_effect_with_deps(
+            move |a| {
+                if let Some(input) = a.cast::<HtmlInputElement>() {
+                    input.focus();
+                };
+                || ()
+            },
+            stage_name_ref
+       );
+    }
     let notify = {
         let on_change = on_change.clone();
         let stage_name_ref = stage_name_ref.clone();

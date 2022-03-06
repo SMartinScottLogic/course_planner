@@ -2,6 +2,7 @@ use common::CourseDetails;
 use reqwasm::http::Request;
 use web_sys::{HtmlInputElement, KeyboardEvent};
 use yew::{function_component, html, use_node_ref, Callback, Properties};
+use yew::use_effect_with_deps;
 
 use crate::SERVER;
 
@@ -65,6 +66,18 @@ pub fn course_name_editor(
 ) -> Html {
     let course_name_ref = use_node_ref();
 
+    {
+        let course_name_ref = course_name_ref.clone();
+        use_effect_with_deps(
+            move |a| {
+                if let Some(input) = a.cast::<HtmlInputElement>() {
+                    input.focus();
+                };
+                || ()
+            },
+            course_name_ref
+       );
+    }
     let onclick = {
         let course_name_ref = course_name_ref.clone();
         let on_change = on_change.clone();
