@@ -1,8 +1,11 @@
-use common::{CourseDetails, Stage};
-use reqwasm::http::Request;
-use yew::{classes, function_component, html, use_effect_with_deps, use_state, Properties, Callback};
 use crate::components::safe_html::SafeHtml;
+use common::{CourseDetails, Stage};
+use reqwasm::http::Method;
+use yew::{
+    classes, function_component, html, use_effect_with_deps, use_state, Callback, Properties,
+};
 
+use crate::request;
 use crate::SERVER;
 
 #[derive(Clone, Properties, PartialEq)]
@@ -29,13 +32,7 @@ pub fn course_details(CourseDetailsProps { course_details }: &CourseDetailsProps
                 let id = id.clone();
                 wasm_bindgen_futures::spawn_local(async move {
                     let fetched_stages: Vec<Stage> =
-                        Request::get(&format!("{SERVER}/course/{id}"))
-                            .send()
-                            .await
-                            .unwrap()
-                            .json()
-                            .await
-                            .unwrap();
+                        request!(&format!("{SERVER}/course/{id}"), Method::GET);
                     log::debug!("fetched course: {fetched_stages:?}");
                     new_stage_visible.set(fetched_stages.is_empty());
                     course.set(fetched_stages);
@@ -56,15 +53,11 @@ pub fn course_details(CourseDetailsProps { course_details }: &CourseDetailsProps
             let course = course.clone();
             log::debug!("New stage for {id}: {stage}");
             wasm_bindgen_futures::spawn_local(async move {
-                let fetched_stages: Vec<Stage> =
-                    Request::post(&format!("{SERVER}/course/{id}"))
-                        .body(serde_json::to_string(&stage).unwrap())
-                        .send()
-                        .await
-                        .unwrap()
-                        .json()
-                        .await
-                        .unwrap();
+                let fetched_stages: Vec<Stage> = request!(
+                    &format!("{SERVER}/course/{id}"),
+                    Method::POST,
+                    serde_json::to_string(&stage).unwrap()
+                );
                 log::debug!("fetched stage: {fetched_stages:?}");
                 new_stage_visible.set(fetched_stages.is_empty());
                 course.set(fetched_stages);

@@ -1,9 +1,9 @@
-use common::{Stage, CourseDetails};
-use reqwasm::http::Request;
-use yew::{function_component, Properties, html, Callback, use_node_ref, use_effect_with_deps};
+use common::{CourseDetails, Stage};
+use reqwasm::http::Method;
 use web_sys::{HtmlInputElement, KeyboardEvent};
+use yew::{function_component, html, use_effect_with_deps, use_node_ref, Callback, Properties};
 
-use crate::SERVER;
+use crate::{request, SERVER};
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct StageEditorProps {
@@ -24,19 +24,14 @@ fn add_new_stage(
     log::info!("Add stage: {:?}", stage);
 
     wasm_bindgen_futures::spawn_local(async move {
-        let stages: Vec<Stage> = Request::post(&format!("{SERVER}/course/{id}"))
-            .body(serde_json::to_string(&stage).unwrap())
-            .header("Content-Type", "application/json")
-            .send()
-            .await
-            .unwrap()
-            .json()
-            .await
-            .unwrap();
+        let stages: Vec<Stage> = request!(
+            &format!("{SERVER}/course/{id}"),
+            Method::POST,
+            serde_json::to_string(&stage).unwrap()
+        );
         on_change.emit(stages);
     });
 }
-
 
 #[function_component(StageEditor)]
 pub fn stage_editor(StageEditorProps { on_change }: &StageEditorProps) -> Html {
@@ -52,43 +47,31 @@ pub fn stage_editor(StageEditorProps { on_change }: &StageEditorProps) -> Html {
                 };
                 || ()
             },
-            stage_name_ref
-       );
+            stage_name_ref,
+        );
     }
     let notify = {
         let on_change = on_change.clone();
         let stage_name_ref = stage_name_ref.clone();
         let stage_duration_ref = stage_duration_ref.clone();
         move || {
-        if let Some(name) = stage_name_ref.cast::<HtmlInputElement>() {
-            if let Some(duration) = stage_duration_ref.cast::<HtmlInputElement>() {
-                let name = name.value();
-                let duration = duration.value();
-            
-                on_change.emit(Stage::new(&name, &duration))
+            if let Some(name) = stage_name_ref.cast::<HtmlInputElement>() {
+                if let Some(duration) = stage_duration_ref.cast::<HtmlInputElement>() {
+                    let name = name.value();
+                    let duration = duration.value();
+
+                    on_change.emit(Stage::new(&name, &duration))
+                }
             }
-        }
         }
     };
     let onclick = {
-        /*
-        let stage_name_ref = stage_name_ref.clone();
-        let stage_duration_ref = stage_duration_ref.clone();
-        let on_change = on_change.clone();
-        let id = course.id().to_owned();
-        */
         let notify = notify.clone();
         move |_| {
             notify();
         }
     };
     let onkeyup = {
-        /*
-        let stage_name_ref = stage_name_ref.clone();
-        let stage_duration_ref = stage_duration_ref.clone();
-        let on_change = on_change.clone();
-        let id = course.clone();
-        */
         let notify = notify.clone();
         move |e: KeyboardEvent| {
             if e.key_code() == 13 {
@@ -99,12 +82,11 @@ pub fn stage_editor(StageEditorProps { on_change }: &StageEditorProps) -> Html {
 
     html! {
         <div style="display: flex; flex-flow: row nowrap;">
-        <input type="text" ref={stage_name_ref} onkeyup={onkeyup.clone()}
-            name="stage_name_editor" placeholder="Stage name …" style="flex: 4 0px; padding-right: 1em"/>
-        <input type="text" ref={stage_duration_ref} onkeyup={onkeyup.clone()}
-            name="stage_len_editor" placeholder="duration" style="flex: 1 0px; padding-right: 1em"/>
-        <button onclick={onclick} style="flex: 0">{ "Ok" }</button>
-    </div>
-
+            <input type="text" ref={stage_name_ref} onkeyup={onkeyup.clone()}
+                name="stage_name_editor" placeholder="Stage name …" style="flex: 4 0px; padding-right: 1em"/>
+            <input type="text" ref={stage_duration_ref} onkeyup={onkeyup.clone()}
+                name="stage_len_editor" placeholder="duration" style="flex: 1 0px; padding-right: 1em"/>
+            <button onclick={onclick} style="flex: 0">{ "Ok" }</button>
+        </div>
     }
 }

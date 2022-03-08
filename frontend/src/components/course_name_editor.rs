@@ -1,10 +1,10 @@
 use common::CourseDetails;
-use reqwasm::http::Request;
+use reqwasm::http::Method;
 use web_sys::{HtmlInputElement, KeyboardEvent};
-use yew::{function_component, html, use_node_ref, Callback, Properties};
 use yew::use_effect_with_deps;
+use yew::{function_component, html, use_node_ref, Callback, Properties};
 
-use crate::SERVER;
+use crate::{request, SERVER};
 
 #[derive(Properties, PartialEq)]
 pub struct CourseNameEditorProps {
@@ -15,13 +15,7 @@ pub struct CourseNameEditorProps {
 fn fetch_courses(on_change: Box<dyn FnOnce(Vec<CourseDetails>)>) {
     wasm_bindgen_futures::spawn_local(async move {
         let mut fetched_courses: Vec<CourseDetails> =
-            Request::get(&format!("{SERVER}/courses/"))
-                .send()
-                .await
-                .unwrap()
-                .json()
-                .await
-                .unwrap();
+            request!(&format!("{SERVER}/courses/"), Method::GET);
         log::debug!("fetched: {fetched_courses:?}");
         fetched_courses.sort_by(|a, b| a.name().cmp(b.name()));
         on_change(fetched_courses);
@@ -40,15 +34,11 @@ fn add_new_course(
     log::info!("Update: {:?}", course_details);
 
     wasm_bindgen_futures::spawn_local(async move {
-        let course_details: CourseDetails = Request::put(&format!("{SERVER}/course"))
-            .body(serde_json::to_string(&course_details).unwrap())
-            .header("Content-Type", "application/json")
-            .send()
-            .await
-            .unwrap()
-            .json()
-            .await
-            .unwrap();
+        let course_details: CourseDetails = request!(
+            &format!("{SERVER}/course"),
+            Method::PUT,
+            serde_json::to_string(&course_details).unwrap()
+        );
         let on_fetch = move |courses| {
             on_change.emit(courses);
             on_select.emit(course_details);
@@ -75,8 +65,8 @@ pub fn course_name_editor(
                 };
                 || ()
             },
-            course_name_ref
-       );
+            course_name_ref,
+        );
     }
     let onclick = {
         let course_name_ref = course_name_ref.clone();

@@ -4,6 +4,7 @@
         "tamasfe.even-better-toml",
         "gruntfuggly.todo-tree",
         "serayuzgur.crates",
-        "rodrigocfd.format-comment"
+        "rodrigocfd.format-comment",
+        "github.vscode-pull-request-github"
     ]
 }

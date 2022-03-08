@@ -1,15 +1,43 @@
-use reqwasm::http::Request;
 use yew::prelude::*;
 
 use common::CourseDetails;
-
+use reqwasm::http::Method;
 mod components;
+use wasm_bindgen_futures::spawn_local;
 
 // Use `wee_alloc` as the global allocator.
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 const SERVER: &str = "http://localhost:1111";
+
+/**
+ * Documentation?
+ */
+#[macro_export]
+macro_rules! request {
+    ($u:expr, $m:expr) => {
+        reqwasm::http::Request::new($u)
+            .method($m)
+            .send()
+            .await
+            .unwrap()
+            .json()
+            .await
+            .unwrap()
+    };
+    ($u:expr, $m:expr, $b:expr) => {
+        reqwasm::http::Request::new($u)
+            .method($m)
+            .body($b)
+            .send()
+            .await
+            .unwrap()
+            .json()
+            .await
+            .unwrap()
+    };
+}
 
 #[function_component(App)]
 fn app() -> Html {
@@ -28,15 +56,9 @@ fn app() -> Html {
         let new_course_visible = new_course_visible.clone();
         use_effect_with_deps(
             move |_| {
-                wasm_bindgen_futures::spawn_local(async move {
+                spawn_local(async move {
                     let mut fetched_courses: Vec<CourseDetails> =
-                        Request::get(&format!("{SERVER}/courses/"))
-                            .send()
-                            .await
-                            .unwrap()
-                            .json()
-                            .await
-                            .unwrap();
+                        request!(&format!("{SERVER}/courses/"), Method::GET);
                     log::debug!("fetched: {fetched_courses:?}");
                     fetched_courses.sort_by(|a, b| a.name().cmp(b.name()));
                     if fetched_courses.is_empty() {
