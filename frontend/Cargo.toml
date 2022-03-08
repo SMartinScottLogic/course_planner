@@ -18,6 +18,7 @@ lto = true
 [dependencies]
 common = {path = "../common"}
 yew = "0.19"
+bounce = "0.2"
 reqwasm = "0.4"
 wasm-bindgen-futures = "0.4"
 # Bindings for all Web APIs, a procedurally generated crate from WebIDL 
